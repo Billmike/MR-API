@@ -59,7 +59,6 @@ const createUser = (request, response) => {
             message: 'Signup successful',
             user: {
               username: user[0].username,
-              user_id: user[0].user_id,
             },
             token,
           });
@@ -108,9 +107,17 @@ const loginUser = (request, response) => {
         });
       }
 
+      const token = jwt.sign({
+        user_id: user[0].user_id,
+      }, process.env.SECRET_KEY);
+
       return response.status(201).json({
         success: true,
         message: 'Sign in successful',
+        user: {
+          username: user[0].username,
+        },
+        token,
       });
     })
     .catch(() => {
