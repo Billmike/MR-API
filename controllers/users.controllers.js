@@ -87,10 +87,31 @@ const loginUser = (request, response) => {
 
   return db.query(selectQuery)
     .then((user) => {
-      console.log('found user', user);
+      if (user.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      const comparePassword = bcryptjs.compareSync(password, user[0].password);
+      if (comparePassword === false) {
+        return response.json({
+          success: false,
+          message: 'Login failed. Check the username or password provided',
+        });
+      }
+
+      return response.status(201).json({
+        success: true,
+        message: 'Sign in successful',
+      });
     })
-    .catch((error) => {
-      console.log('got error', error);
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred. We are working to have this resolved.',
+      });
     });
 };
 
