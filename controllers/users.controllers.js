@@ -1,5 +1,6 @@
 const bcryptjs = require('bcryptjs');
 const { v4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 const db = require('../db-config');
 const validateUserSignup = require('../utils/validateSignup');
@@ -49,6 +50,10 @@ const createUser = (request, response) => {
       }
       return db.query(insertQuery)
         .then((user) => {
+          const token = jwt.sign({
+            user_id: user[0].user_id,
+          }, process.env.SECRET_KEY);
+
           response.status(201).json({
             success: true,
             message: 'Signup successful',
@@ -56,6 +61,7 @@ const createUser = (request, response) => {
               username: user[0].username,
               user_id: user[0].user_id,
             },
+            token,
           });
         });
     })
