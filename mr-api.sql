@@ -44,5 +44,3 @@ CREATE TABLE reviews (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   update_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
-
-INSERT INTO users (username, password, user_id) VALUES('testusername', 'qwertyuiop', 'qwert123');

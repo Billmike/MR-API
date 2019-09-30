@@ -6,7 +6,9 @@ config();
 const options = {
   promiseLib: promise,
 };
-const pgPrommise = require('pg-promise')(options);
+const pgPromise = require('pg-promise')(options);
 
 const connectionString = process.env.DATABASE_URL;
-const database = pgPrommise(connectionString);
+const db = pgPromise(connectionString);
+
+module.exports = db;
