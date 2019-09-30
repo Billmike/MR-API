@@ -1,0 +1,26 @@
+{
+    "extends": "airbnb-base",
+    "rules": {
+        "semi": [
+            "error",
+            "always"
+        ],
+        "no-param-reassign": 0,
+        "import/prefer-default-export": 0,
+        "import/no-unresolved": [2, { "commonjs": true }],
+        "no-shadow": ["error", { "allow": ["req", "res", "err"] }],
+        "valid-jsdoc": ["error", {
+            "requireReturn": true,
+            "requireReturnType": true,
+            "requireParamDescription": false,
+            "requireReturnDescription": true
+        }],
+        "require-jsdoc": ["error", {
+            "require": {
+                "FunctionDeclaration": true,
+                "MethodDefinition": true,
+                "ClassDeclaration": true
+            }
+        }]
+    }
+}
