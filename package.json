@@ -8,10 +8,13 @@
   },
   "dependencies": {
     "axios": "^0.19.0",
+    "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.5",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
-    "pg-promise": "5"
+    "jsonwebtoken": "^8.5.1",
+    "pg-promise": "5",
+    "uuid": "^3.3.3"
   },
   "devDependencies": {
     "eslint": "^6.5.0",
