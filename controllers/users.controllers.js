@@ -1,9 +1,17 @@
 const bcryptjs = require('bcryptjs');
 const { v4 } = require('uuid');
 
-const db = require('../queries');
+const db = require('../db-config');
 const validateUserSignup = require('../utils/validateSignup');
 
+/**
+ * Create User
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {object} The newly created user object
+ */
 const createUser = (request, response) => {
   const { username, password } = request.body;
   const userData = { username, password };
@@ -59,6 +67,34 @@ const createUser = (request, response) => {
     });
 };
 
+const loginUser = (request, response) => {
+  const { username, password } = request.body;
+  const userData = { username, password };
+
+  const selectQuery = {
+    text: 'SELECT * from users WHERE username = $1',
+    values: [username],
+  };
+
+  const { errors, isValid } = validateUserSignup(userData);
+
+  if (!isValid) {
+    return response.status(400).json({
+      message: 'Invalid input supplied',
+      errors,
+    });
+  }
+
+  return db.query(selectQuery)
+    .then((user) => {
+      console.log('found user', user);
+    })
+    .catch((error) => {
+      console.log('got error', error);
+    });
+};
+
 module.exports = {
   createUser,
+  loginUser,
 };
