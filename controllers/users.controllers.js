@@ -72,6 +72,14 @@ const createUser = (request, response) => {
     });
 };
 
+/**
+ * Log in User
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {Object} Signed in user object
+ */
 const loginUser = (request, response) => {
   const { username, password } = request.body;
   const userData = { username, password };
