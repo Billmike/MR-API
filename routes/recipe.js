@@ -6,5 +6,6 @@ const recipe = Router();
 
 recipe.post('/', verifySessionMiddleware, recipeController.createRecipe);
 recipe.patch('/:recipeId', verifySessionMiddleware, recipeController.editRecipe);
+recipe.delete('/:recipeId', verifySessionMiddleware, recipeController.deleteRecipe);
 
 module.exports = recipe;

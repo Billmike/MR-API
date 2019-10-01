@@ -151,7 +151,61 @@ const editRecipe = (request, response) => {
     });
 };
 
+/**
+ * Delete Recipe
+ *
+ * @param {object} request The express request object
+ * @param {object} response The express response object
+ *
+ * @returns {object} The response object
+ */
+const deleteRecipe = (request, response) => {
+  const { params: { recipeId }, user } = request;
+
+  const selectQuery = {
+    text: 'SELECT * FROM recipes WHERE recipe_id = $1',
+    values: [recipeId],
+  };
+
+  const deleteQuery = {
+    text: 'DELETE FROM recipes WHERE recipe_id = $1',
+    values: [recipeId],
+  };
+
+  return db.query(selectQuery)
+    .then((foundRecipe) => {
+      if (foundRecipe.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `Recipe with ID: ${recipeId} not found`,
+        });
+      }
+
+      if (foundRecipe[0].owner !== user[0].user_id) {
+        return response.status(403).json({
+          success: false,
+          message: 'You cannot perform this action as you do not own this recipe',
+        });
+      }
+
+      return db.query(deleteQuery)
+        .then(() => {
+          response.status(204).json({
+            success: true,
+            message: 'Recipe deleted successfully',
+          });
+        });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred. Please try again',
+      });
+    });
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
+  deleteRecipe,
 };
