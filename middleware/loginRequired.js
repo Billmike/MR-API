@@ -25,7 +25,7 @@ const checkIfUserIsLoggedInAndVerifyToken = (request, response, next) => {
     values: [decodedToken.user_id],
   };
 
-  return db.any(selectQuery).then((user) => {
+  return db.query(selectQuery).then((user) => {
     request.user = user;
     return next();
   });
