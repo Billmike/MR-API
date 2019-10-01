@@ -39,4 +39,6 @@ const createRecipe = (request, response) => {
   };
 };
 
-module.exports = createRecipe;
+module.exports = {
+  createRecipe,
+};
