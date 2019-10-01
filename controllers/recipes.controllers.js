@@ -1,6 +1,14 @@
 const { v4 } = require('uuid');
 const db = require('../db-config');
 
+/**
+ * Create Recipe
+ *
+ * @param {object} request The express request object
+ * @param {object} response The express response object
+ *
+ * @returns {object} The created recipe
+ */
 const createRecipe = (request, response) => {
   const {
     body: {
@@ -65,6 +73,14 @@ const createRecipe = (request, response) => {
     });
 };
 
+/**
+ * Edit Recipe
+ *
+ * @param {object} request The express request object
+ * @param {object} response The express response object
+ *
+ * @returns {object} The response object
+ */
 const editRecipe = (request, response) => {
   const {
     body: {
@@ -90,20 +106,6 @@ const editRecipe = (request, response) => {
 
   return db.query(selectQuery)
     .then((foundRecipe) => {
-      const updateQuery = {
-        text: 'UPDATE recipes SET name=$1, description=$2, category=$3, cookTime=$4, imageUrl=$5, ingredients=$6, directions=$7, portion=$8',
-        values: [
-          name || foundRecipe[0].name,
-          description || foundRecipe[0].description,
-          category || foundRecipe[0].category,
-          cookTime || foundRecipe[0].cookTime,
-          imageUrl || foundRecipe[0].imageUrl,
-          ingredients || foundRecipe[0].ingredients,
-          directions || foundRecipe[0].directions,
-          portion || foundRecipe[0].portion,
-        ],
-      };
-
       if (foundRecipe.length === 0) {
         return response.status(404).json({
           success: false,
@@ -117,6 +119,21 @@ const editRecipe = (request, response) => {
           message: 'You cannot perform this action as you do not own this recipe',
         });
       }
+
+      const updateQuery = {
+        text: 'UPDATE recipes SET name=$1, description=$2, category=$3, cook_time=$4, image_url=$5, ingredients=$6, directions=$7, portion=$8 WHERE recipe_id = $9',
+        values: [
+          name || foundRecipe[0].name,
+          description || foundRecipe[0].description,
+          category || foundRecipe[0].category,
+          cookTime || foundRecipe[0].cook_time,
+          imageUrl || foundRecipe[0].image_url,
+          ingredients || foundRecipe[0].ingredients,
+          directions || foundRecipe[0].directions,
+          portion || foundRecipe[0].portion,
+          recipeId,
+        ],
+      };
 
       return db.query(updateQuery)
         .then(() => {
