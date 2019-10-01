@@ -65,6 +65,76 @@ const createRecipe = (request, response) => {
     });
 };
 
+const editRecipe = (request, response) => {
+  const {
+    body: {
+      name,
+      description,
+      category,
+      cookTime,
+      imageUrl,
+      ingredients,
+      directions,
+      portion,
+    },
+    params: {
+      recipeId,
+    },
+    user,
+  } = request;
+
+  const selectQuery = {
+    text: 'SELECT * FROM recipes WHERE recipe_id = $1',
+    values: [recipeId],
+  };
+
+  return db.query(selectQuery)
+    .then((foundRecipe) => {
+      const updateQuery = {
+        text: 'UPDATE recipes SET name=$1, description=$2, category=$3, cookTime=$4, imageUrl=$5, ingredients=$6, directions=$7, portion=$8',
+        values: [
+          name || foundRecipe[0].name,
+          description || foundRecipe[0].description,
+          category || foundRecipe[0].category,
+          cookTime || foundRecipe[0].cookTime,
+          imageUrl || foundRecipe[0].imageUrl,
+          ingredients || foundRecipe[0].ingredients,
+          directions || foundRecipe[0].directions,
+          portion || foundRecipe[0].portion,
+        ],
+      };
+
+      if (foundRecipe.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `Recipe with ID: ${recipeId} not found`,
+        });
+      }
+
+      if (foundRecipe[0].owner !== user[0].user_id) {
+        return response.status(403).json({
+          success: false,
+          message: 'You cannot perform this action as you do not own this recipe',
+        });
+      }
+
+      return db.query(updateQuery)
+        .then(() => {
+          response.status(204).json({
+            success: true,
+            message: 'Recipe update successful',
+          });
+        });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred while trying to update the recipe',
+      });
+    });
+};
+
 module.exports = {
   createRecipe,
+  editRecipe,
 };
