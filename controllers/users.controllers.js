@@ -136,7 +136,72 @@ const loginUser = (request, response) => {
     });
 };
 
+/**
+ * Follow author
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {void}
+ */
+const followAuthor = (request, response) => {
+  const {
+    params: { userId },
+    user,
+  } = request;
+
+  const selectUserQuery = {
+    text: 'SELECT * FROM users WHERE user_id = $1',
+    values: [userId],
+  };
+
+  const selectFollowingQuery = {
+    text: 'SELECT * FROM follows WHERE user_id = $1 AND following_user = $2',
+    values: [userId, user[0].user_id],
+  };
+
+  const insertQuery = {
+    text: 'INSERT INTO follows(user_id, following_user) VALUES($1, $2) RETURNING *',
+    values: [userId, user[0].user_id],
+  };
+
+  return db.query(selectUserQuery)
+    .then((foundUser) => {
+      if (foundUser.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `User with the ID: ${userId} was not found`,
+        });
+      }
+
+      return db.query(selectFollowingQuery)
+        .then((foundFollowing) => {
+          if (foundFollowing.length === 1) {
+            return response.status(409).json({
+              success: false,
+              message: 'You already followed this user',
+            });
+          }
+
+          return db.query(insertQuery)
+            .then(() => {
+              response.status(201).json({
+                success: true,
+                message: 'Successfully followed user',
+              });
+            });
+        });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred. Please try again later',
+      });
+    });
+};
+
 module.exports = {
   createUser,
   loginUser,
+  followAuthor,
 };
