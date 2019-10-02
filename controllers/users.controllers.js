@@ -109,7 +109,7 @@ const loginUser = (request, response) => {
 
       const comparePassword = bcryptjs.compareSync(password, user[0].password);
       if (comparePassword === false) {
-        return response.json({
+        return response.status(400).json({
           success: false,
           message: 'Login failed. Check the username or password provided',
         });
@@ -255,9 +255,73 @@ const editProfile = (request, response) => {
     }));
 };
 
+/**
+ * Update Password
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {void}
+ */
+const updatePassword = (request, response) => {
+  const {
+    user,
+    body: {
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    },
+  } = request;
+
+  const selectUserQuery = {
+    text: 'SELECT * FROM users WHERE user_id = $1',
+    values: [user[0].user_id],
+  };
+
+  return db.query(selectUserQuery)
+    .then((foundUser) => {
+      if (foundUser.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `User with the ID: ${user[0].user_id} was not found`,
+        });
+      }
+      const comparePassword = bcryptjs.compareSync(oldPassword, user[0].password);
+      if (comparePassword === false) {
+        return response.status(400).json({
+          success: false,
+          message: 'Old password is incorrect',
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return response.status(400).json({
+          success: false,
+          message: 'Properly cross-check your new password and confirm password',
+        });
+      }
+
+      const updatePasswordQuery = {
+        text: 'UPDATE users SET password = $1 WHERE user_id = $2',
+        values: [newPassword, user[0].user_id],
+      };
+
+      return db.query(updatePasswordQuery)
+        .then(() => response.status(204).json({
+          success: true,
+          message: 'Password update successful',
+        }));
+    })
+    .catch(() => response.status(500).json({
+      success: false,
+      message: 'An error occurred',
+    }));
+};
+
 module.exports = {
   createUser,
   loginUser,
   followAuthor,
   editProfile,
+  updatePassword,
 };
