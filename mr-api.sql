@@ -44,3 +44,11 @@ CREATE TABLE reviews (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   update_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE follows (
+  ID SERIAL PRIMARY KEY,
+  user_id VARCHAR REFERENCES users(user_id),
+  following_user VARCHAR REFERENCES users(user_id),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  update_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
