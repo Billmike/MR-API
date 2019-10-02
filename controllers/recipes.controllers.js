@@ -204,8 +204,83 @@ const deleteRecipe = (request, response) => {
     });
 };
 
+/**
+ * Like Recipe method
+ *
+ * @param {Object} request The express request object
+ * @param {*} response The express response object
+ *
+ * @returns {void}
+ */
+const likeRecipe = (request, response) => {
+  const { params: { recipeId }, user } = request;
+
+  const selectQuery = {
+    text: 'SELECT * FROM recipes WHERE recipe_id = $1',
+    values: [recipeId],
+  };
+
+  const selectLikesQuery = {
+    text: 'SELECT * FROM likes WHERE fav_recipe_id = $1 AND fav_user_id = $2',
+    values: [recipeId, user[0].user_id],
+  };
+
+  const deleteLikeQuery = {
+    text: 'DELETE from likes WHERE fav_recipe_id = $1 AND fav_user_id = $2',
+    values: [recipeId, user[0].user_id],
+  };
+
+  const createLikeQuery = {
+    text: 'INSERT INTO likes(fav_recipe_id, fav_user_id) VALUES($1, $2)',
+    values: [recipeId, user[0].user_id],
+  };
+
+  return db.query(selectQuery)
+    .then((foundRecipe) => {
+      if (foundRecipe.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `Recipe with ID: ${recipeId} not found`,
+        });
+      }
+
+      if (foundRecipe[0].owner === user[0].user_id) {
+        return response.status(403).json({
+          success: false,
+          message: 'You cannot perform this action on your own recipe',
+        });
+      }
+
+      return db.query(selectLikesQuery)
+        .then((foundLike) => {
+          if (foundLike.length === 1) {
+            return db.query(deleteLikeQuery)
+              .then(() => response.status(204).json({
+                success: true,
+                message: 'Recipe removed from your likes',
+              }));
+          }
+
+          return db.query(createLikeQuery)
+            .then(() => {
+              response.status(201).json({
+                success: true,
+                message: 'Recipe added to your list of likes',
+              });
+            });
+        });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred',
+      });
+    });
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
   deleteRecipe,
+  likeRecipe,
 };
