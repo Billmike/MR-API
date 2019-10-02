@@ -136,7 +136,61 @@ const loginUser = (request, response) => {
     });
 };
 
+const followAuthor = (request, response) => {
+  const {
+    params: { userId },
+    user,
+  } = request;
+
+  const selectUserQuery = {
+    text: 'SELECT * FROM users WHERE user_id = $1',
+    values: [userId],
+  };
+
+  const selectFollowingQuery = {
+    text: 'SELECT * FROM users WHERE user_id = $1 AND following_user = $2',
+    values: [userId, user[0].user_id],
+  };
+
+  const insertQuery = {
+    text: 'INSERT INTO follows(user_id, following_user) VALUES($1, $2) RETURNING *',
+    values: [userId, user[0].user_id],
+  };
+
+  return db.query(selectUserQuery)
+    .then((foundUser) => {
+      if (foundUser.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `User with the ID: ${userId} was not found`,
+        });
+      }
+
+      return db.query(selectFollowingQuery)
+        .then((foundFollowing) => {
+          if (foundFollowing.length === 1) {
+            return response.status(409).json({
+              success: false,
+              message: 'You already followed this user',
+            });
+          }
+
+          return db.query(insertQuery)
+            .then(() => {
+              response.status(201).json({
+                success: true,
+                message: 'Successfully followed user',
+              });
+            });
+        });
+    })
+    .catch((error) => {
+      console.log('error', error);
+    });
+};
+
 module.exports = {
   createUser,
   loginUser,
+  followAuthor,
 };
