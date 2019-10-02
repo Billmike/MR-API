@@ -8,5 +8,6 @@ recipe.post('/', verifySessionMiddleware, recipeController.createRecipe);
 recipe.patch('/:recipeId', verifySessionMiddleware, recipeController.editRecipe);
 recipe.delete('/:recipeId', verifySessionMiddleware, recipeController.deleteRecipe);
 recipe.post('/:recipeId', verifySessionMiddleware, recipeController.likeRecipe);
+recipe.post('/review/:recipeId', verifySessionMiddleware, recipeController.reviewRecipe);
 
 module.exports = recipe;
