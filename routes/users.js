@@ -8,5 +8,6 @@ user.post('/signup', userController.createUser);
 user.post('/login', userController.loginUser);
 user.post('/follow/:userId', verifySessionMiddleware, userController.followAuthor);
 user.patch('/', verifySessionMiddleware, userController.editProfile);
+user.patch('/password', verifySessionMiddleware, userController.updatePassword);
 
 module.exports = user;

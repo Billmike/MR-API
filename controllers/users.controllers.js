@@ -301,9 +301,12 @@ const updatePassword = (request, response) => {
         });
       }
 
+      const salt = bcryptjs.genSaltSync(12);
+      const hashedPassword = bcryptjs.hashSync(newPassword, salt);
+
       const updatePasswordQuery = {
         text: 'UPDATE users SET password = $1 WHERE user_id = $2',
-        values: [newPassword, user[0].user_id],
+        values: [hashedPassword, user[0].user_id],
       };
 
       return db.query(updatePasswordQuery)
