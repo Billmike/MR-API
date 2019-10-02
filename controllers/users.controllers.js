@@ -239,7 +239,7 @@ const editProfile = (request, response) => {
           username || user[0].username,
           bio || user[0].bio,
           hobbies || user[0].hobbies,
-          imageUrl || user[0].imageUrl,
+          imageUrl || user[0].image_url,
           user[0].user_id,
         ],
       };
