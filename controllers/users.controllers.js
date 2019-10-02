@@ -136,6 +136,14 @@ const loginUser = (request, response) => {
     });
 };
 
+/**
+ * Follow author
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {void}
+ */
 const followAuthor = (request, response) => {
   const {
     params: { userId },
@@ -148,7 +156,7 @@ const followAuthor = (request, response) => {
   };
 
   const selectFollowingQuery = {
-    text: 'SELECT * FROM users WHERE user_id = $1 AND following_user = $2',
+    text: 'SELECT * FROM follows WHERE user_id = $1 AND following_user = $2',
     values: [userId, user[0].user_id],
   };
 
@@ -184,8 +192,11 @@ const followAuthor = (request, response) => {
             });
         });
     })
-    .catch((error) => {
-      console.log('error', error);
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred. Please try again later',
+      });
     });
 };
 
