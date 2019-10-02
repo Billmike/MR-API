@@ -208,7 +208,7 @@ const deleteRecipe = (request, response) => {
  * Like Recipe method
  *
  * @param {Object} request The express request object
- * @param {*} response The express response object
+ * @param {Object} response The express response object
  *
  * @returns {void}
  */
@@ -278,9 +278,61 @@ const likeRecipe = (request, response) => {
     });
 };
 
+/**
+ * Review recipe
+ *
+ * @param {Object} request The express request object
+ * @param {*} response The express response object
+ *
+ * @returns {Object} The created review Object
+ */
+const reviewRecipe = (request, response) => {
+  const {
+    params: {
+      recipeId,
+    },
+    body: {
+      review,
+    },
+    user,
+  } = request;
+
+  const selectRecipeQuery = {
+    text: 'SELECT * FROM recipes WHERE recipe_id = $1',
+    values: [recipeId],
+  };
+
+  const createReviewQuery = {
+    text: 'INSERT INTO reviews(review_recipe_id, review_user_id, review) VALUES($1, $2, $3) RETURNING *',
+    values: [recipeId, user[0].user_id, review],
+  };
+
+  return db.query(selectRecipeQuery)
+    .then((foundRecipe) => {
+      if (foundRecipe.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `Recipe with ID: ${recipeId} not found`,
+        });
+      }
+
+      return db.query(createReviewQuery)
+        .then((createdReview) => response.status(201).json({
+          success: true,
+          message: 'Review added successfully',
+          review: createdReview,
+        }));
+    })
+    .catch(() => response.status(500).json({
+      success: false,
+      message: 'An error occurred',
+    }));
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
   deleteRecipe,
   likeRecipe,
+  reviewRecipe,
 };
