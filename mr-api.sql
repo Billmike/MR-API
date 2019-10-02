@@ -7,6 +7,9 @@ CREATE TABLE users (
   ID SERIAL,
   username VARCHAR UNIQUE NOT NULL,
   password TEXT NOT NULL,
+  bio TEXT,
+  hobbies TEXT,
+  image_url TEXT,
   user_id VARCHAR UNIQUE NOT NULL PRIMARY KEY,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   update_at TIMESTAMP NOT NULL DEFAULT NOW()
