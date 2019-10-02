@@ -224,6 +224,11 @@ const editProfile = (request, response) => {
     values: [user[0].user_id],
   };
 
+  const checkExistingUsernameQuery = {
+    text: 'SELECT * from users WHERE username = $1',
+    values: [username],
+  };
+
   return db.query(selectUserQuery)
     .then((foundUser) => {
       if (foundUser.length === 0) {
@@ -233,21 +238,32 @@ const editProfile = (request, response) => {
         });
       }
 
-      const updateUserQuery = {
-        text: 'UPDATE users SET username=$1, bio=$2, hobbies=$3, image_url=$4 WHERE user_id = $5',
-        values: [
-          username || user[0].username,
-          bio || user[0].bio,
-          hobbies || user[0].hobbies,
-          imageUrl || user[0].image_url,
-          user[0].user_id,
-        ],
-      };
-      return db.query(updateUserQuery)
-        .then(() => response.status(204).json({
-          success: true,
-          message: 'User profile updated successfully',
-        }));
+      return db.query(checkExistingUsernameQuery)
+        .then((existingUserName) => {
+          if (existingUserName.length === 1) {
+            return response.status(409).json({
+              success: false,
+              message: 'This username is taken already',
+            });
+          }
+
+          const updateUserQuery = {
+            text: 'UPDATE users SET username=$1, bio=$2, hobbies=$3, image_url=$4 WHERE user_id = $5',
+            values: [
+              username || user[0].username,
+              bio || user[0].bio,
+              hobbies || user[0].hobbies,
+              imageUrl || user[0].image_url,
+              user[0].user_id,
+            ],
+          };
+
+          return db.query(updateUserQuery)
+            .then(() => response.status(204).json({
+              success: true,
+              message: 'User profile updated successfully',
+            }));
+        });
     })
     .catch(() => response.status(500).json({
       success: false,
