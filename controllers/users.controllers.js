@@ -109,7 +109,7 @@ const loginUser = (request, response) => {
 
       const comparePassword = bcryptjs.compareSync(password, user[0].password);
       if (comparePassword === false) {
-        return response.json({
+        return response.status(400).json({
           success: false,
           message: 'Login failed. Check the username or password provided',
         });
@@ -224,6 +224,11 @@ const editProfile = (request, response) => {
     values: [user[0].user_id],
   };
 
+  const checkExistingUsernameQuery = {
+    text: 'SELECT * from users WHERE username = $1',
+    values: [username],
+  };
+
   return db.query(selectUserQuery)
     .then((foundUser) => {
       if (foundUser.length === 0) {
@@ -233,20 +238,97 @@ const editProfile = (request, response) => {
         });
       }
 
-      const updateUserQuery = {
-        text: 'UPDATE users SET username=$1, bio=$2, hobbies=$3, image_url=$4 WHERE user_id = $5',
-        values: [
-          username || user[0].username,
-          bio || user[0].bio,
-          hobbies || user[0].hobbies,
-          imageUrl || user[0].image_url,
-          user[0].user_id,
-        ],
+      return db.query(checkExistingUsernameQuery)
+        .then((existingUserName) => {
+          if (existingUserName.length === 1) {
+            return response.status(409).json({
+              success: false,
+              message: 'This username is taken already',
+            });
+          }
+
+          const updateUserQuery = {
+            text: 'UPDATE users SET username=$1, bio=$2, hobbies=$3, image_url=$4 WHERE user_id = $5',
+            values: [
+              username || user[0].username,
+              bio || user[0].bio,
+              hobbies || user[0].hobbies,
+              imageUrl || user[0].image_url,
+              user[0].user_id,
+            ],
+          };
+
+          return db.query(updateUserQuery)
+            .then(() => response.status(204).json({
+              success: true,
+              message: 'User profile updated successfully',
+            }));
+        });
+    })
+    .catch(() => response.status(500).json({
+      success: false,
+      message: 'An error occurred',
+    }));
+};
+
+/**
+ * Update Password
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {void}
+ */
+const updatePassword = (request, response) => {
+  const {
+    user,
+    body: {
+      oldPassword,
+      newPassword,
+      confirmPassword,
+    },
+  } = request;
+
+  const selectUserQuery = {
+    text: 'SELECT * FROM users WHERE user_id = $1',
+    values: [user[0].user_id],
+  };
+
+  return db.query(selectUserQuery)
+    .then((foundUser) => {
+      if (foundUser.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `User with the ID: ${user[0].user_id} was not found`,
+        });
+      }
+      const comparePassword = bcryptjs.compareSync(oldPassword, user[0].password);
+      if (comparePassword === false) {
+        return response.status(400).json({
+          success: false,
+          message: 'Old password is incorrect',
+        });
+      }
+
+      if (newPassword !== confirmPassword) {
+        return response.status(400).json({
+          success: false,
+          message: 'Properly cross-check your new password and confirm password',
+        });
+      }
+
+      const salt = bcryptjs.genSaltSync(12);
+      const hashedPassword = bcryptjs.hashSync(newPassword, salt);
+
+      const updatePasswordQuery = {
+        text: 'UPDATE users SET password = $1 WHERE user_id = $2',
+        values: [hashedPassword, user[0].user_id],
       };
-      return db.query(updateUserQuery)
+
+      return db.query(updatePasswordQuery)
         .then(() => response.status(204).json({
           success: true,
-          message: 'User profile updated successfully',
+          message: 'Password update successful',
         }));
     })
     .catch(() => response.status(500).json({
@@ -260,4 +342,5 @@ module.exports = {
   loginUser,
   followAuthor,
   editProfile,
+  updatePassword,
 };
