@@ -329,10 +329,46 @@ const reviewRecipe = (request, response) => {
     }));
 };
 
+/**
+ * favorite recipe
+ * @param {Object} request The request object
+ * @param {Object} response The response object
+ *
+ * @returns {Object} The favorite recipes
+ */
+const getFavoriteRecipes = (request, response) => {
+  const { user } = request;
+
+  const selectFavoriteRecipeQuery = {
+    text: 'SELECT * FROM likes WHERE fav_user_id = $1 JOIN recipes ON likes.fav_recipe_id = recipes.recipe_id',
+    values: [user[0].user_id],
+  };
+
+  return db.query(selectFavoriteRecipeQuery)
+    .then((favouriteRcipes) => {
+      if (favouriteRcipes.length === 0) {
+        return response.status(200).json({
+          success: true,
+          message: 'You have no favorite recipes',
+        });
+      }
+
+      return response.status(200).json({
+        success: true,
+        recipes: favouriteRcipes,
+      });
+    })
+    .catch(() => response.status(500).json({
+      success: false,
+      message: 'An error occurred',
+    }));
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
   deleteRecipe,
   likeRecipe,
   reviewRecipe,
+  getFavoriteRecipes,
 };
