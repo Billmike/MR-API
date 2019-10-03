@@ -282,7 +282,7 @@ const likeRecipe = (request, response) => {
  * Review recipe
  *
  * @param {Object} request The express request object
- * @param {*} response The express response object
+ * @param {Object} response The express response object
  *
  * @returns {Object} The created review Object
  */
@@ -366,6 +366,42 @@ const getFavoriteRecipes = (request, response) => {
     });
 };
 
+/**
+ * Get Recipe
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {Object} The recipe object
+ */
+const getRecipe = (request, response) => {
+  const { recipeId } = request.params;
+
+  const selectRecipeQuery = {
+    text: 'SELECT * FROM recipes JOIN reviews ON recipes.recipe_id = reviews.review_recipe_id JOIN likes ON recipes.recipe_id = likes.fav_recipe_id WHERE recipe_id = $1',
+    values: [recipeId],
+  };
+
+  return db.query(selectRecipeQuery)
+    .then((foundRecipe) => {
+      if (foundRecipe.length === 0) {
+        return response.status(404).json({
+          success: false,
+          message: `Recipe with ID: ${recipeId} not found`,
+        });
+      }
+
+      return response.status(200).json({
+        success: true,
+        recipes: foundRecipe,
+      });
+    })
+    .catch(() => response.status(500).json({
+      success: false,
+      message: 'An error occurred',
+    }));
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
@@ -373,4 +409,5 @@ module.exports = {
   likeRecipe,
   reviewRecipe,
   getFavoriteRecipes,
+  getRecipe,
 };
