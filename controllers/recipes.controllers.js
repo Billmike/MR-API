@@ -340,7 +340,7 @@ const getFavoriteRecipes = (request, response) => {
   const { user } = request;
 
   const selectFavoriteRecipeQuery = {
-    text: 'SELECT * FROM likes WHERE fav_user_id = $1 JOIN recipes ON likes.fav_recipe_id = recipes.recipe_id',
+    text: 'SELECT * FROM likes JOIN recipes ON likes.fav_recipe_id = recipes.recipe_id WHERE fav_user_id = $1',
     values: [user[0].user_id],
   };
 
@@ -358,10 +358,12 @@ const getFavoriteRecipes = (request, response) => {
         recipes: favouriteRcipes,
       });
     })
-    .catch(() => response.status(500).json({
-      success: false,
-      message: 'An error occurred',
-    }));
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred',
+      });
+    });
 };
 
 module.exports = {
