@@ -380,7 +380,7 @@ const getRecipe = (request, response) => {
   const selectRecipeQuery = {
     text: `
       SELECT r.*,
-      array_agg(favs.fav_recipe_id) AS favorites
+      array_agg(favs.fav_user_id) AS favorites
       FROM recipes as r
       INNER JOIN likes AS favs ON r.recipe_id = favs.fav_recipe_id
       WHERE recipe_id = $1
