@@ -451,16 +451,16 @@ const getComments = (request, response) => {
  * Search Recipe
  *
  * @param {Object} request The express request object
- * @param {*} response The express response object
+ * @param {Object} response The express response object
  *
  * @returns {Object} The found recipe
  */
 const searchRecipe = (request, response) => {
-  const { searchTerm } = request.body;
+  const { query: { searchTerm } } = request;
 
   const searchQuery = {
-    text: "SELECT * FROM recipes WHERE name LIKE 'searchTerm%'",
-    values: [searchTerm],
+    text: 'SELECT * FROM recipes WHERE name ILIKE $1 OR ingredients ILIKE $1',
+    values: [`%${searchTerm}%`],
   };
 
   return db.query(searchQuery)

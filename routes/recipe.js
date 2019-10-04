@@ -12,5 +12,6 @@ recipe.post('/review/:recipeId', verifySessionMiddleware, recipeController.revie
 recipe.get('/favorites', verifySessionMiddleware, recipeController.getFavoriteRecipes);
 recipe.get('/:recipeId', recipeController.getRecipe);
 recipe.get('/comments/:recipeId', recipeController.getComments);
+recipe.get('/recipes/search', recipeController.searchRecipe);
 
 module.exports = recipe;
