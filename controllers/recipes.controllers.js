@@ -447,6 +447,44 @@ const getComments = (request, response) => {
     }));
 };
 
+/**
+ * Search Recipe
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {Object} The found recipe
+ */
+const searchRecipe = (request, response) => {
+  const { query: { searchTerm } } = request;
+
+  const searchQuery = {
+    text: 'SELECT * FROM recipes WHERE name ILIKE $1 OR ingredients ILIKE $1',
+    values: [`%${searchTerm}%`],
+  };
+
+  return db.query(searchQuery)
+    .then((foundRecipes) => {
+      if (foundRecipes.length === 0) {
+        return response.status(200).json({
+          success: true,
+          message: `No recipe found matching - ${searchTerm}`,
+        });
+      }
+
+      return response.status(200).json({
+        success: true,
+        recipes: foundRecipes,
+      });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred',
+      });
+    });
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
@@ -456,4 +494,5 @@ module.exports = {
   getFavoriteRecipes,
   getRecipe,
   getComments,
+  searchRecipe,
 };
