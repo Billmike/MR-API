@@ -380,7 +380,7 @@ const getRecipe = (request, response) => {
   const selectRecipeQuery = {
     text: `
       SELECT r.*,
-      array_agg(favs.fav_recipe_id) AS favorites
+      array_agg(favs.fav_user_id) AS favorites
       FROM recipes as r
       INNER JOIN likes AS favs ON r.recipe_id = favs.fav_recipe_id
       WHERE recipe_id = $1
@@ -411,6 +411,42 @@ const getRecipe = (request, response) => {
     });
 };
 
+/**
+ * Get comments
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {Object} The comment object
+ */
+const getComments = (request, response) => {
+  const { params: { recipeId } } = request;
+
+  const selectRecipeQuery = {
+    text: 'SELECT * FROM reviews WHERE review_recipe_id = $1',
+    values: [recipeId],
+  };
+
+  return db.query(selectRecipeQuery)
+    .then((foundComments) => {
+      if (foundComments.length === 0) {
+        return response.status(200).json({
+          success: true,
+          message: 'No comments yet for this recipe',
+        });
+      }
+
+      return response.status(200).json({
+        success: true,
+        comments: foundComments,
+      });
+    })
+    .catch(() => response.status(500).json({
+      success: false,
+      message: 'An error occurred',
+    }));
+};
+
 module.exports = {
   createRecipe,
   editRecipe,
@@ -419,4 +455,5 @@ module.exports = {
   reviewRecipe,
   getFavoriteRecipes,
   getRecipe,
+  getComments,
 };
