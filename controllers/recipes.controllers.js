@@ -378,7 +378,14 @@ const getRecipe = (request, response) => {
   const { recipeId } = request.params;
 
   const selectRecipeQuery = {
-    text: 'SELECT * FROM recipes JOIN reviews ON recipes.recipe_id = reviews.review_recipe_id JOIN likes ON recipes.recipe_id = likes.fav_recipe_id WHERE recipe_id = $1',
+    text: `
+      SELECT r.*,
+      array_agg(favs.fav_recipe_id) AS favorites
+      FROM recipes as r
+      INNER JOIN likes AS favs ON r.recipe_id = favs.fav_recipe_id
+      WHERE recipe_id = $1
+      GROUP BY(r.id, r.recipe_id)
+      `,
     values: [recipeId],
   };
 
@@ -396,10 +403,12 @@ const getRecipe = (request, response) => {
         recipes: foundRecipe,
       });
     })
-    .catch(() => response.status(500).json({
-      success: false,
-      message: 'An error occurred',
-    }));
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred',
+      });
+    });
 };
 
 module.exports = {

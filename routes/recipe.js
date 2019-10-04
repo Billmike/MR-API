@@ -10,5 +10,6 @@ recipe.delete('/:recipeId', verifySessionMiddleware, recipeController.deleteReci
 recipe.post('/:recipeId', verifySessionMiddleware, recipeController.likeRecipe);
 recipe.post('/review/:recipeId', verifySessionMiddleware, recipeController.reviewRecipe);
 recipe.get('/favorites', verifySessionMiddleware, recipeController.getFavoriteRecipes);
+recipe.get('/:recipeId', recipeController.getRecipe);
 
 module.exports = recipe;
