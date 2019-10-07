@@ -55,3 +55,11 @@ CREATE TABLE follows (
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   update_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE TABLE blocked_users (
+  ID SERIAL PRIMARY KEY,
+  blocker_user_id VARCHAR REFERENCES users(user_id),
+  blocked_user_id VARCHAR REFERENCES users(user_id),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  update_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
