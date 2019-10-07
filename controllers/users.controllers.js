@@ -337,10 +337,58 @@ const updatePassword = (request, response) => {
     }));
 };
 
+/**
+ * Block User
+ *
+ * @param {Object} request The express request object
+ * @param {Object} response The express response object
+ *
+ * @returns {Object} The blocked user
+ */
+const blockUser = (request, response) => {
+  const { user, params: { userId } } = request;
+  const values = [user[0].user_id, userId];
+
+  const selectBlockedUserQuery = {
+    text: 'SELECT * FROM blocked_users WHERE blocker_user_id = $1 AND blocked_user_id = $2',
+    values,
+  };
+
+  const insertQuery = {
+    text: 'INSERT INTO blocked_users(blocker_user_id, blocked_user_id) VALUES($1, $2) RETURNING *',
+    values,
+  };
+
+  return db.query(selectBlockedUserQuery)
+    .then((blockedUser) => {
+      if (blockedUser.length === 1) {
+        return response.status(400).json({
+          success: false,
+          message: 'You already blocked this user',
+        });
+      }
+
+      return db.query(insertQuery)
+        .then(() => {
+          response.status(201).json({
+            success: true,
+            message: 'Successfully blocked this user',
+          });
+        });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred',
+      });
+    });
+};
+
 module.exports = {
   createUser,
   loginUser,
   followAuthor,
   editProfile,
   updatePassword,
+  blockUser,
 };
