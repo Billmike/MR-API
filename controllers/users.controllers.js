@@ -384,6 +384,50 @@ const blockUser = (request, response) => {
     });
 };
 
+/**
+ * Get user
+ *
+ * @param {Object} request The express request object
+ * @param {*} response The express response object
+ *
+ * @returns {Object} The found User
+ */
+const getUser = (request, response) => {
+  const { user_id } = request.user[0];
+
+  const selectUserQuery = {
+    text: `SELECT username, bio, hobbies, image_url, user_id,
+      array_agg(blocked_users.blocked_user_id) AS blocked_user
+      FROM users
+      INNER JOIN blocked_users ON users.user_id = blocked_users.blocker_user_id
+      WHERE user_id = $1
+      GROUP BY(users.id, users.user_id)
+      `,
+    values: [user_id],
+  };
+
+  return db.query(selectUserQuery)
+    .then((foundUser) => {
+      if (foundUser.length === 0) {
+        return response.status(404).json({
+          status: false,
+          message: `User with ID - ${user_id} not found`,
+        });
+      }
+
+      return response.status(200).json({
+        success: true,
+        user: foundUser,
+      });
+    })
+    .catch(() => {
+      response.status(500).json({
+        success: false,
+        message: 'An error occurred',
+      });
+    });
+};
+
 module.exports = {
   createUser,
   loginUser,
@@ -391,4 +435,5 @@ module.exports = {
   editProfile,
   updatePassword,
   blockUser,
+  getUser,
 };
