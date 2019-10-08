@@ -397,7 +397,7 @@ const getUser = (request, response) => {
 
   const selectUserQuery = {
     text: `SELECT username, bio, hobbies, image_url, user_id,
-      array_agg(blocked_users.blocked_user_id) AS blocked_user
+      array_agg(blocked_users.blocked_user_id) AS blocked_users
       FROM users
       INNER JOIN blocked_users ON users.user_id = blocked_users.blocker_user_id
       WHERE user_id = $1

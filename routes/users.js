@@ -10,5 +10,6 @@ user.post('/follow/:userId', verifySessionMiddleware, userController.followAutho
 user.patch('/', verifySessionMiddleware, userController.editProfile);
 user.patch('/password', verifySessionMiddleware, userController.updatePassword);
 user.post('/:userId', verifySessionMiddleware, userController.blockUser);
+user.get('/', verifySessionMiddleware, userController.getUser);
 
 module.exports = user;
