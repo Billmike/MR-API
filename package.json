@@ -13,7 +13,7 @@
     "bluebird": "^3.5.5",
     "dotenv": "^8.1.0",
     "express": "^4.17.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "pg-promise": "5",
     "uuid": "^3.3.3"
   },
